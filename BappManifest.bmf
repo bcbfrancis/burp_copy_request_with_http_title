@@ -6,8 +6,8 @@ ScreenVersion: 1.4
 SerialVersion: 10
 MinPlatformVersion: 0
 ProOnly: False
-Author: Emanuel Duss / Compass Security
-ShortDescription: Copy methods in the context menu of selected messages and requests/responses.
+Author: Bruno Braga / Compass Security
+ShortDescription: Revised version of the tool already made by Emanuel Duss / Compass Security which fits personalized formatting needs. Thx Maenu!
 EntryPoint: CopyRequestResponse.py
 BuildCommand: 
 SupportedProducts: Pro, Community 
