@@ -34,15 +34,8 @@ class BurpExtender(IBurpExtender, IContextMenuFactory, IHttpRequestResponse):
     def createMenuItems(self, invocation):
         self.context = invocation
         menuList = ArrayList()
-        menuList.add(JMenuItem("Copy Request2",
+        menuList.add(JMenuItem("Copy Request",
                                actionPerformed=self.copyRequestAndResponse))
-
-        menuList.add(JMenuItem("Copy HTTP Request & Response (Full/Full)",
-                actionPerformed=self.copyRequestFullResponseFull))
-        menuList.add(JMenuItem("Copy HTTP Request & Response (Full/Header)",
-                actionPerformed=self.copyRequestFullResponseHeader))
-        menuList.add(JMenuItem("Copy HTTP Request & Response (Full/Header + Selected Data)",
-                actionPerformed=self.copyRequestFullResponseHeaderData))
 
         return menuList
 
@@ -107,59 +100,6 @@ class BurpExtender(IBurpExtender, IContextMenuFactory, IHttpRequestResponse):
 
         self.copyToClipboard(data)
 
-
-
-
-
-
-    def copyRequestFullResponseFull(self, event):
-        httpTraffic = self.context.getSelectedMessages()[0]
-        httpRequest = httpTraffic.getRequest()
-        httpResponse = httpTraffic.getResponse()
-
-        data = self.stripTrailingNewlines(httpRequest)
-        data.append(13) # Line Break
-        data.append(13)
-        data.extend(self.stripTrailingNewlines(httpResponse))
-
-        self.copyToClipboard(data)
-
-    def copyRequestFullResponseHeader(self, event):
-        httpTraffic = self.context.getSelectedMessages()[0]
-        httpRequest = httpTraffic.getRequest()
-        httpResponse = httpTraffic.getResponse()
-        httpResponseBodyOffset = self.helpers.analyzeResponse(httpResponse).getBodyOffset()
-
-        data = self.stripTrailingNewlines(httpRequest)
-        data.append(13)
-        data.append(13)
-        data.extend(httpResponse[0:httpResponseBodyOffset])
-        data.extend(self.str_to_array(self.CUT_TEXT))
-
-        self.copyToClipboard(data)
-
-    def copyRequestFullResponseHeaderData(self, event):
-        httpTraffic = self.context.getSelectedMessages()[0]
-        httpRequest = httpTraffic.getRequest()
-        httpResponse = httpTraffic.getResponse()
-        httpResponseBodyOffset = self.helpers.analyzeResponse(httpResponse).getBodyOffset()
-        selectionBounds = self.context.getSelectionBounds()
-        httpResponseData = httpResponse[selectionBounds[0]:selectionBounds[1]]
-
-        data = self.stripTrailingNewlines(httpRequest)
-        data.append(13)
-        data.append(13)
-        data.extend(httpResponse[0:httpResponseBodyOffset])
-        data.extend(self.str_to_array(self.CUT_TEXT))
-        data.append(13)
-        data.extend(self.stripTrailingNewlines(httpResponseData))
-        data.append(13)
-        data.extend(self.str_to_array(self.CUT_TEXT))
-
-        # Ugly hack because VMware is messing up the clipboard if a text is still selected, the function
-        # has to be run in a separate thread which sleeps for 1.5 seconds.
-        t = threading.Thread(target=self.copyToClipboard, args=(data,True))
-        t.start()
 
     def copyToClipboard(self, data, sleep=False):
         if sleep is True:
