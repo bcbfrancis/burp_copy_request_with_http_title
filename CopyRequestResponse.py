@@ -34,7 +34,7 @@ class BurpExtender(IBurpExtender, IContextMenuFactory, IHttpRequestResponse):
     def createMenuItems(self, invocation):
         self.context = invocation
         menuList = ArrayList()
-        menuList.add(JMenuItem("Copy Request",
+        menuList.add(JMenuItem("Copy Request 2",
                                actionPerformed=self.copyRequestAndResponse))
 
         return menuList
@@ -92,12 +92,13 @@ class BurpExtender(IBurpExtender, IContextMenuFactory, IHttpRequestResponse):
         data.append(13)
 
         # Pretty-print JSON in HTTP response body if it's JSON, else append original
-        try:
-            prettyJson = format_json_body(responseBody)
-            data.extend(self.str_to_array(prettyJson))
-        except json.JSONDecodeError:
-            data.extend(self.str_to_array(responseBody))
+        # try:
+        #     prettyJson = format_json_body(responseBody)
+        #     data.extend(self.str_to_array(prettyJson))
+        # except json.JSONDecodeError:
+        #     data.extend(self.str_to_array(responseBody))
 
+        data.extend(self.str_to_array(responseBody))
         self.copyToClipboard(data)
 
 
