@@ -34,8 +34,10 @@ class BurpExtender(IBurpExtender, IContextMenuFactory, IHttpRequestResponse):
     def createMenuItems(self, invocation):
         self.context = invocation
         menuList = ArrayList()
-        menuList.add(JMenuItem("Copy Request 2",
+        menuList.add(JMenuItem("Copy Request json",
                                actionPerformed=self.copyRequestAndResponse))
+        menuList.add(JMenuItem("Copy Request no json",
+                               actionPerformed=self.copyRequestAndResponse_no_json))
 
         return menuList
 
@@ -99,6 +101,38 @@ class BurpExtender(IBurpExtender, IContextMenuFactory, IHttpRequestResponse):
         #     data.extend(self.str_to_array(responseBody))
 
         data.extend(self.str_to_array(responseBody))
+        self.copyToClipboard(data)
+
+
+
+    def copyRequestAndResponse_no_json(self, event):
+        httpTraffic = self.context.getSelectedMessages()[0]
+        httpRequest = httpTraffic.getRequest()
+        httpResponse = httpTraffic.getResponse()
+
+        requestHeaders, requestBody = self.helpers.bytesToString(httpRequest).split('\r\n\r\n', 1)
+        data = self.str_to_array("HTTP Request:")
+        data.append(13)
+        data.extend(self.str_to_array(requestHeaders))
+        data.append(13)
+        data.append(13)
+
+        # Directly adding request body without JSON formatting
+        data.extend(self.str_to_array(requestBody))
+
+        # Splitting headers and body for the response
+        responseHeaders, responseBody = self.helpers.bytesToString(httpResponse).split('\r\n\r\n', 1)
+        data.append(13)
+        data.append(13)
+        data.extend(self.str_to_array("HTTP Response:"))
+        data.append(13)
+        data.extend(self.str_to_array(responseHeaders))
+        data.append(13)
+        data.append(13)
+
+        # Directly adding response body without JSON formatting
+        data.extend(self.str_to_array(responseBody))
+
         self.copyToClipboard(data)
 
 
