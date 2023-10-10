@@ -34,7 +34,7 @@ class BurpExtender(IBurpExtender, IContextMenuFactory, IHttpRequestResponse):
     def createMenuItems(self, invocation):
         self.context = invocation
         menuList = ArrayList()
-        menuList.add(JMenuItem("Copy Request json",
+        menuList.add(JMenuItem("Copy Request JSON",
                                actionPerformed=self.copyRequestAndResponse))
         menuList.add(JMenuItem("Copy Request no json",
                                actionPerformed=self.copyRequestAndResponse_no_json))
