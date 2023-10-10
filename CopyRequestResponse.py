@@ -23,8 +23,11 @@ class BurpExtender(IBurpExtender, IContextMenuFactory, IHttpRequestResponse):
     def registerExtenderCallbacks(self, callbacks):
         callbacks.setExtensionName("Copy HTTP Request & Response")
 
-        stdout = PrintWriter(callbacks.getStdout(), True)
-        stderr = PrintWriter(callbacks.getStderr(), True)
+        self.stdout = PrintWriter(callbacks.getStdout(), True)
+        self.stderr = PrintWriter(callbacks.getStderr(), True)
+
+        self.stderr.println("Registered Error Handler")
+        self.stdout.println("Registered Output Handler")
 
         self.helpers = callbacks.getHelpers()
         self.callbacks = callbacks
@@ -110,28 +113,17 @@ class BurpExtender(IBurpExtender, IContextMenuFactory, IHttpRequestResponse):
         httpRequest = httpTraffic.getRequest()
         httpResponse = httpTraffic.getResponse()
 
-        requestHeaders, requestBody = self.helpers.bytesToString(httpRequest).split('\r\n\r\n', 1)
         data = self.str_to_array("HTTP Request:")
         data.append(13)
-        data.extend(self.str_to_array(requestHeaders))
+        data.extend(self.stripTrailingNewlines(httpRequest)) 
         data.append(13)
         data.append(13)
-
-        # Directly adding request body without JSON formatting
-        data.extend(self.str_to_array(requestBody))
 
         # Splitting headers and body for the response
-        responseHeaders, responseBody = self.helpers.bytesToString(httpResponse).split('\r\n\r\n', 1)
-        data.append(13)
-        data.append(13)
         data.extend(self.str_to_array("HTTP Response:"))
         data.append(13)
-        data.extend(self.str_to_array(responseHeaders))
+        data.extend(self.stripTrailingNewlines(httpResponse)) 
         data.append(13)
-        data.append(13)
-
-        # Directly adding response body without JSON formatting
-        data.extend(self.str_to_array(responseBody))
 
         self.copyToClipboard(data)
 
@@ -142,6 +134,8 @@ class BurpExtender(IBurpExtender, IContextMenuFactory, IHttpRequestResponse):
 
         # Fix line endings of the headers
         data = self.helpers.bytesToString(data).replace('\r\n', '\n')
+        data = data.decode("utf-8")
+        self.stdout.println("Data type {}".format(type(data)))
 
         with self.clipboard_lock:
             systemClipboard = Toolkit.getDefaultToolkit().getSystemClipboard()
