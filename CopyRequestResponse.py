@@ -39,8 +39,10 @@ class BurpExtender(IBurpExtender, IContextMenuFactory, IHttpRequestResponse):
         menuList = ArrayList()
         menuList.add(JMenuItem("Copy Request JSON",
                                actionPerformed=self.copyRequestAndResponse))
-        menuList.add(JMenuItem("Copy Request no json",
+        menuList.add(JMenuItem("Copy Request Response",
                                actionPerformed=self.copyRequestAndResponse_no_json))
+        menuList.add(JMenuItem("Copy Request ResponseHeader",
+                               actionPerformed=self.copyRequestAndResponseHeader))
 
         return menuList
 
@@ -127,6 +129,29 @@ class BurpExtender(IBurpExtender, IContextMenuFactory, IHttpRequestResponse):
 
         self.copyToClipboard(data)
 
+    def copyRequestAndResponseHeader(self, event):
+        httpTraffic = self.context.getSelectedMessages()[0]
+        httpRequest = httpTraffic.getRequest()
+        httpResponse = httpTraffic.getResponse()
+        
+        httpResponseBodyOffset = self.helpers.analyzeResponse(httpResponse).getBodyOffset()
+
+
+
+        data = self.str_to_array("HTTP Request:")
+        data.append(13)
+        data.extend(self.stripTrailingNewlines(httpRequest)) 
+        data.append(13)
+        data.append(13)
+
+        # Splitting headers and body for the response
+        data.extend(self.str_to_array("HTTP Response:"))
+        data.append(13)
+        data.extend(httpResponse[0:httpResponseBodyOffset])
+        data.append(13)
+        data.extend(self.str_to_array(self.CUT_TEXT))
+        data.append(13)
+        self.copyToClipboard(data)
 
     def copyToClipboard(self, data, sleep=False):
         if sleep is True:
@@ -134,8 +159,7 @@ class BurpExtender(IBurpExtender, IContextMenuFactory, IHttpRequestResponse):
 
         # Fix line endings of the headers
         data = self.helpers.bytesToString(data).replace('\r\n', '\n')
-        data = data.decode("utf-8")
-        self.stdout.println("Data type {}".format(type(data)))
+        data = data.decode('utf-8', 'ignore')
 
         with self.clipboard_lock:
             systemClipboard = Toolkit.getDefaultToolkit().getSystemClipboard()
